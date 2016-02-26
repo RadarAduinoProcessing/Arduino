@@ -15,22 +15,15 @@ COMPONENTI:
 
 
 #include <Servo.h>
-           
 
-
-int sinistraDestraPos = 0;    // salvo la posizione
 const int numeroLetture = 10; // numero di letture
-int index = 0;                // lettura corrente
-unsigned long max = 0;                // letture maxi
-int media = 0;                // media
-
-
-unsigned long distanza = 0;   // per salvare la distanza
+const int echoPin = 6;              // hc-sr04 echo pin
+const int initPin = 7;              // hc-sr04 init pin
 
 Servo sinistraDestraServo;     // mappo il servo
-int echoPin = 6;              // hc-sr04 echo pin
-int initPin = 7;              // hc-sr04 init pin
 
+int angoloSevoMin = 0;
+int angoloSevoMax = 180;
 
 void setup() {
 
@@ -51,23 +44,24 @@ void loop() {
     sinistraDestraPos += direzione;
   
     //se mi muovo fuori range massimo
-    if (sinistraDestraPos > 180){
+    if (sinistraDestraPos > angoloSevoMax){
         //limito il range al massimo valore
-        sinistraDestraPos = 180;
+        sinistraDestraPos = angoloSevoMax;
         //inverto la rotazione
         direzione *= -1;
     }
     
     //se mi muovo fuori range minimo
-    if (sinistraDestraPos < 0){
+    if (sinistraDestraPos < angoloSevoMin){
         //limito il range al minimo valore
-        sinistraDestraPos = 0;
+        sinistraDestraPos = angoloSevoMin;
         //inverto la rotazione
         direzione *= -1;
     }
     
     //eseguo 'numeroLetture' letture e le medio
-    unsigned long somma = 0; //unsigend long perche' leggendo 10 volte il valore massimo 5173 anche un unsigned int va in overflow! occhio che qui usavi int e quindi andava in errore anche per valori di 3000us
+    int somma = 0;
+    int index;
     for (index = 0; index<=numeroLetture;index++) {
         // roba del sonar
         digitalWrite(initPin, LOW);
@@ -81,8 +75,9 @@ void loop() {
         delay(10);
     }
     
-    unsigned int media = max / numeroLetture;
+    int media = max / numeroLetture;
     
+    //iniva i dati al pc
     Serial.print("X");                  // stampo in gradi la posizione X
     Serial.print(sinistraDestraPos);            
     // posizione del servo
